@@ -13,6 +13,7 @@ Created on Thu Sep 21 10:37:02 2023
 
 import numpy as np
 import matplotlib.pyplot as plt
+from copy import deepcopy
 
 class TSP(): 
     def __init__(self, n, seed=None): 
@@ -38,6 +39,9 @@ class TSP():
         # stores them in the object
         self.x, self.y = x, y
         
+        self.route = np.zeros(n, dtype=int)
+        self.init_config()
+        
     # instead of having it as a function make it a method of the Cities object
     def dist(self, city1, city2): 
         """Computes the distance between two cities
@@ -56,12 +60,20 @@ class TSP():
         n = self.n
         
         # create a random permutation of indices of the cities
-        # np.random.permutation gives a permutation of numbers up to n 
-        route = np.random.permutation(n)
+        # np.random.permutation gives a permutation of numbers up to n
+        # assigning like this changes the pointer
+        # self.route = np.random.permutation(n)
         
-        return route
-
-    def display(self, route): 
+        # this reassigns the elements in the array instead 
+        #   of having to find new space in memory for it
+        self.route[:] = np.random.permutation(n)
+        
+        # we do this here and resassign so that when we repeat init_config 
+        #   we use always the same sapce of memory
+        # we call __init__ once but init_config many times, 
+        #   so we are going to always target the same point in memory
+                
+    def display(self): 
         """Displays a route and the dots of the cities using matplotlib
         
         Uses .pause() method to show how the plot evolves for each iteration
@@ -70,7 +82,7 @@ class TSP():
         # clear the plot always
         plt.clf()
         
-        x,y = self.x, self.y 
+        x,y,route = self.x, self.y, self.route
         
         # plot the routes
         plt.plot(x[route], y[route], '-', color='orange')
@@ -87,11 +99,12 @@ class TSP():
         # this way we can see the route evolve
         plt.pause(0.01)
     
-    def cost(self, route): 
+    def cost(self): 
         """Calculates all the distances and sums them to get to the final cost
         """
         
         d = 0.0
+        route = self.route
         
         for i in range(self.n):         
             city1 = route[i] 
@@ -122,25 +135,30 @@ class TSP():
         move = (e1, e2)
         return move
         
-    def accept_move(self, move, route): 
+    def accept_move(self, move): 
         e1, e2 = move
 
         # we create a copy of route to not affect the original arr
-        new_route = np.copy(route)
+        new_route = np.copy(self.route)
         # we revert the order of the indices in that segment of the configuration
         new_route[e1+1:e2+1] = new_route[e2:e1:-1] # reason about the indices choice
         
-        return new_route
+        self.route = new_route
 
-    def compute_delta_cost(self, old_route, move): 
+    def compute_delta_cost(self, move): 
         """We compute the delta cost between the two routes without having to recalculate the whole cost
         """
         
-        old_c = self.cost(old_route)
-        new_route = self.accept_move(move, old_route)
+        old_c = self.cost()
+        new_route = self.accept_move(move)
         new_c = self.cost(new_route)
         
         return new_c - old_c
+    
+    def copy(self): 
+        # we could optimize it more, i.e. the coordinates of the cities will not change so
+        #   we just need to copy the reference to the route
+        return deepcopy(self)
     
 # we now generalize the greedy function
 # need to define
@@ -165,13 +183,13 @@ def greedy(probl, repeats=1, num_iters=100, seed=None):
         if seed is not None: 
             np.random.seed(seed)
         
-        # same as for propose move 
-        x = probl.init_config()
-        cx = probl.cost(x)
+        # store the configuration inside the object and not in the greedy function 
+        probl.init_config()
+        cx = probl.cost()
         
-        probl.display(x)
+        probl.display()
 
-        print(f'initial cost is {cx:.5f}, starting route is {x}')
+        print(f'initial cost is {cx:.5f}, starting route is {probl.route}')
         
         for t in range(num_iters):
             # we make propose move a method of the problem so that you can specify it in the problem object
@@ -179,11 +197,11 @@ def greedy(probl, repeats=1, num_iters=100, seed=None):
             move = probl.propose_move()
             
             # now we pass move so that we optimize the calc of the delta cost
-            delta_c = probl.compute_delta_cost(x, move)
+            delta_c = probl.compute_delta_cost(move)
             
             if delta_c <= 0: 
                 # accepted!
-                x = probl.accept_move(move, x)
+                probl.accept_move(move)
                 # cx = cy
                 cx += delta_c
     
@@ -195,9 +213,18 @@ def greedy(probl, repeats=1, num_iters=100, seed=None):
         
         if cx < best_cost: 
             best_cost = cx
-            best_config = x
+            # copying the object straight away is not correct though!
+            # this assigns the reference to the object, and when later on the
+            #   probl gets initialized again, the best_probl will point to the new 
+            #   problem
+            # but by just doing copy,there are arrays in the object that are references themselves, 
+            #   so those references will still point to the arrays from the iniitla obj (which will chang ) 
+            
+            # hence there are different types of copy, shallow (depth = 1, leads to the problem described above)
+            #   we are going to use deep copy which solves the problem we've described 
+            best_probl = probl.copy() # use the method defined in the object
     
-    probl.display(best_config)
+    best_probl.display(best_config)
     print(f'Best cost: {best_cost}')
     
     return best_cost, best_config

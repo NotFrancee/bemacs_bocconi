@@ -57,7 +57,7 @@ def init_config(cities: Cities):
     
     return route
 
-def display(cities, route, color): 
+def display(cities, route): 
     """Displays a route and the dots of the cities using matplotlib
     Uses .pause() method to show how the plot evolves for each iteration
     """
@@ -68,11 +68,11 @@ def display(cities, route, color):
     x,y = cities.x, cities.y 
     
     # plot the routes
-    plt.plot(x[route], y[route], '-', color=color)
+    plt.plot(x[route], y[route], '-', color='orange')
     
     # plot the last edge
     comeback = [route[-1], route[0]]
-    plt.plot(x[comeback], y[comeback], color=color)
+    plt.plot(x[comeback], y[comeback], color='orange')
     
     # plot the nodes (after to put them on the top)
     plt.plot(x,y, 'o', color='black')
@@ -132,37 +132,52 @@ def compute_delta_cost(cities, old_route, new_route):
     return new_c - old_c
     
     
-def greedy(cities, num_iters=100, seed=None): 
-    if seed is not None: 
-        np.random.seed(seed)
-        
-    x = init_config(cities)
-    cx = cost(x, cities)
-
-    display(cities, x, 'orange')
-    print(f'initial cost is {cx:.5f}, starting route is {x}')
+def greedy(cities, repeats=1, num_iters=100, seed=None): 
+    """Greedy algorithm
+    * cities: the cities object
+    * repeates: how many times you repeat the algorithm
+    * num_iters: how many iterations per run
+    * seed: for consistent results
+    """
     
-    for t in range(num_iters):
-        y = propose_move(x, cities)
-        # cy = cost(y, cities)
-        
-        # delta_c = cy - cx
-        delta_c = compute_delta_cost(cities, x, y)
-        
-        if delta_c <= 0: 
-            # accepted!
-            x = y
-            # cx = cy
-            cx += delta_c
-
-            # print the new cost and display the route on the plot
-            print(f'\tmove accepted, new cost = {cx}')
-            display(cities, x, 'blue')
+    best_config = None
+    best_cost = np.infty
+    
+    for i in range(repeats): 
+        if seed is not None: 
+            np.random.seed(seed)
             
-    # stopping criteria -> max number of iterations reached 
-    print(f'final cost is {cost(x, cities)}')
-    return x
-
-
-# why is it so slow? we compute the total cost every time, we should just compute the delta
-
+        x = init_config(cities)
+        cx = cost(x, cities)
+    
+        display(cities, x)
+        print(f'initial cost is {cx:.5f}, starting route is {x}')
+        
+        for t in range(num_iters):
+            y = propose_move(x, cities)
+            # cy = cost(y, cities)
+            
+            # delta_c = cy - cx
+            delta_c = compute_delta_cost(cities, x, y)
+            
+            if delta_c <= 0: 
+                # accepted!
+                x = y
+                # cx = cy
+                cx += delta_c
+    
+                # print the new cost and display the route on the plot
+                print(f'\tmove accepted, c = {cx}, t = {t}')
+                # display(cities, x)
+                
+        # stopping criteria -> max number of iterations reached 
+        print(f'final cost: {cx}')
+        
+        if cx < best_cost: 
+            best_cost = cx
+            best_config = x
+            
+    display(cities, best_config)
+    print(f'Best cost: {best_cost}')
+    
+    return best_cost, best_config

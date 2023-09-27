@@ -34,64 +34,73 @@ def estimate_pi(npoints, ndims):
     return pi_est
 
 
-def display(x_values, means, stds, x_labels):
-    tup = plt.subplots(1, 2)
-    fig = tup[0]
-    ax: list[Axes] = tup[1]
+class Trials:
+    def __init__(self, trials, dims, points) -> None:
+        self.trials = trials
+        self.dims = dims
+        self.points = points
 
-    for i in range(len(x_values)):
-        ax[i].plot(x_values[i], means[i], stds[i])
-        if i == 1:
-            ax[i].set_xscale("log")
-        ax[i].set_xlabel(x_labels[i])
+        self.dim_est_means = np.zeros(len(dims))
+        self.dim_est_std = np.zeros(len(dims))
 
-    plt.show()
+        self.points_est_means = np.zeros(len(points))
+        self.points_est_std = np.zeros(len(points))
 
+    def display(self):
+        x_values = [self.dims, self.points]
+        y_row1 = [self.dim_est_means, self.points_est_means]
+        y_row2 = [self.dim_est_std, self.points_est_std]
+        x_labels = ["N Dims", "N points"]
 
-# study the behavior of this function as n and dims are (independenlty) increased.
-# estimate the variance from repeated trials
-def compute_stats(trials, dims, points):
-    n_dims_est = len(dims)
-    dim_estimates_means = np.zeros(n_dims_est)
-    dim_estimates_std = np.zeros(n_dims_est)
+        fig, (row1, row2) = plt.subplots(2, 2, sharex="col")
 
-    n_points_est = len(points)
-    points_est_means = np.zeros(n_points_est)
-    points_est_std = np.zeros(n_points_est)
+        for i, ax in enumerate(row1):
+            ax: Axes = ax
+            ax.plot(x_values[i], y_row1[i], color="orange")
+            ax.hlines(np.pi, min(x_values[i]), max(x_values[i]), colors=["black"])
+            ax.set_xlabel(x_labels[i])
+            if i == 0:
+                ax.set_ylabel("Mean")
 
-    # estimates = np.zeros(trials)
+        for i, ax in enumerate(row2):
+            ax.plot(x_values[i], y_row2[i])
+            if i == 1:
+                ax.set_xscale("log")
+            ax.set_xlabel(x_labels[i])
+            if i == 0:
+                ax.set_ylabel("Stdev")
 
-    for j, dim in enumerate(dims):
-        estimates = np.zeros(trials)
+            # plot 1/n^2
+            xs = np.linspace(max(x_values[i]), 100)
+            ys = 1 / (np.sqrt(xs))
+            plt.plot(xs, ys, color="gray")
 
-        for i in range(trials):
-            pi_est = estimate_pi(1000, dim)
-            estimates[i] = pi_est
+        plt.tight_layout()
+        plt.show()
 
-        dim_estimates_means[j] = estimates.mean()
-        dim_estimates_std[j] = estimates.std()
+    def run(self):
+        estimates = np.zeros(self.trials)
 
-    for j, n_points in enumerate(points):
-        estimates = np.zeros(trials)
+        for j, ndim in enumerate(self.dims):
+            for i in range(self.trials):
+                pi_est = estimate_pi(50000, ndim)
+                estimates[i] = pi_est
 
-        for i in range(trials):
-            pi_est = estimate_pi(n_points, 2)
-            estimates[i] = pi_est
+            self.dim_est_means[j] = estimates.mean()
+            self.dim_est_std[j] = estimates.std()
 
-        points_est_means[j] = estimates.mean()
-        points_est_std[j] = estimates.std()
+        for j, n_points in enumerate(self.points):
+            for i in range(self.trials):
+                pi_est = estimate_pi(n_points, 2)
+                estimates[i] = pi_est
 
-    print("dims", dim_estimates_means, dim_estimates_std, sep="\n")
-    print("npoints", points_est_means, points_est_std, sep="\n")
-
-    x_values = [dims, points]
-    means_values = [dim_estimates_means, points_est_means]
-    std_values = [dim_estimates_std, points_est_std]
-    x_labels = ["N Dims", "N points"]
-
-    display(x_values, means_values, std_values, x_labels)
+            self.points_est_means[j] = estimates.mean()
+            self.points_est_std[j] = estimates.std()
 
 
 dims = np.arange(2, 11)
-npoints = np.linspace(100, 100000, 100, dtype=int)
-compute_stats(50, dims, npoints)
+npoints = np.linspace(10, 100000, 100, dtype=int)
+
+trials = Trials(50, dims, npoints)
+trials.run()
+trials.display()

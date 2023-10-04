@@ -2,6 +2,7 @@
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 # generates samples from an array from 1 to 5 (excluded) specifying the probabilities
 # # gen = np.random.choice(5, 10, p=[0.5, 0, 0.25, 0.25, 0])
@@ -60,3 +61,20 @@ def mcmc_sampling(p, steps=1000):
         # run many iterations and see how many traj finished in one state, how many in another... etc
         # (visualize through an histogram)
         # is it true that the probabilities converge to the initial probabilities we specified as an input?
+
+    return s
+
+
+def test_sampling(n, p):
+    results = []
+    for _ in range(n):
+        res = mcmc_sampling(p)
+        results.append(res)
+
+    print(results)
+    plt.hist(results, density=True)
+    plt.show()
+
+
+p = [0.3, 0.3, 0.1, 0.2, 0.05, 0.05]
+test_sampling(200, p)

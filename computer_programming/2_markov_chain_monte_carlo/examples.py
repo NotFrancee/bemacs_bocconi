@@ -12,8 +12,29 @@ import matplotlib.pyplot as plt
 # first example from the lecture on the M.A. Algorithm
 
 
+def mcmc_sample(init_state, C, A, steps=100):
+    n = C.shape[0]
+    s = init_state
+
+    for _ in range(steps):
+        new_s = np.random.choice(n, p=C[:, s])
+        prob_acceptance = A[new_s, s]
+        if np.random.rand() < prob_acceptance:
+            s = new_s
+
+    return s
+
+
 # we provide the probability distribution we want to reach
-def mcmc_sampling(p, steps=1000):
+def mcmc_sampling(p, n_samples=100, steps=1000):
+    """Sample from the given probability vector
+
+    We assume that each node is connected to the one before and after
+    so each node can either move to the next one or the one before, not to every one
+
+    We are able to reach the end of the chain iff all probabilities are nonzero
+    """
+
     n = len(p)  # the number of states is the length of p
 
     # we initialize C
@@ -36,7 +57,7 @@ def mcmc_sampling(p, steps=1000):
 
     C = C / C.sum(axis=1)
 
-    # compute A
+    # compute A using MH algorithm
     A = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
@@ -47,6 +68,12 @@ def mcmc_sampling(p, steps=1000):
 
     # we start with a random state and move according to C and A
     s = np.random.randint(n)
+
+    ss = np.zeros(steps)
+
+    for i in range(n_samples):
+        pass
+
     for _ in range(steps):
         # we now propose a new move. we can move to all the states where the p > 0
         new_s = np.random.choice(n, p=C[:, s])

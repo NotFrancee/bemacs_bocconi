@@ -48,39 +48,21 @@ class TSP:
 
     def init_config(self):
         """Create a first random hamiltonian path. Returns the indices of the cities."""
-
-        # gets the number of nodes (the number of cities)
         n = self.n
 
-        # create a random permutation of indices of the cities
-        # np.random.permutation gives a permutation of numbers up to n
-        # assigning like this changes the pointer
-        # self.route = np.random.permutation(n)
-
-        # this reassigns the elements in the array instead
-        #   of having to find new space in memory for it
         self.route[:] = np.random.permutation(n)
-
-        # we do this here and resassign so that when we repeat init_config
-        #   we use always the same sapce of memory
-        # we call __init__ once but init_config many times,
-        #   so we are going to always target the same point in memory
 
     def display(self):
         """Displays a route and the dots of the cities using matplotlib
 
         Uses .pause() method to show how the plot evolves for each iteration
         """
-
-        # clear the plot always
         plt.clf()
 
         x, y, route = self.x, self.y, self.route
 
-        # plot the routes
+        # plot the routes and last edge
         plt.plot(x[route], y[route], "-", color="orange")
-
-        # plot the last edge
         comeback = [route[-1], route[0]]
         plt.plot(x[comeback], y[comeback], color="orange")
 
@@ -88,8 +70,6 @@ class TSP:
         plt.plot(x, y, "o", color="black")
 
         plt.show()
-        # plt.pause because otherwise it renders all the plots at the end.
-        # this way we can see the route evolve
         plt.pause(0.01)
 
     def cost(self):
@@ -106,7 +86,6 @@ class TSP:
 
         return dist
 
-    # we split the propose_move in two functions
     def propose_move(self):
         n = self.n
 
@@ -118,9 +97,6 @@ class TSP:
             if e1 > e2:
                 e1, e2 = e2, e1
 
-            # we also want to avoid to choose the first and last index, otherwise it's just going to invert the route
-
-            # we want to avoid e1 = e2 and that the two edges are already aadjacent (otherwise nothing will change)
             if e2 > e1 + 1 and not (e1 == 0 and e2 == n - 1):
                 break
 
@@ -136,7 +112,6 @@ class TSP:
         """
         e1, e2 = move
         route = self.route
-        # we revert the order of the indices in that segment of the configuration
         route[e1 + 1 : e2 + 1] = route[e2:e1:-1]  # reason about the indices choice
 
     def compute_delta_cost(self, move):
@@ -147,25 +122,10 @@ class TSP:
         new cost = cost of all edges + cost(E1) + cost(E2) where E1, E2 are the new edges with the vertices switched
         """
 
-        # temporarily: we duplicate the whole problem and accept the move in the new problem
-        # old_c = self.cost()
-
-        # new_tsp = self.copy()  # create a new problem
-        # new_tsp.accept_move(move)  # accept the move in the new problem
-        # new_c = new_tsp.cost()  # compute the cost for the new problem
-
-        # delta_c_slow = new_c - old_c
-
         route = self.route
         e1, e2 = move
         city11, city12 = route[e1], route[e1 + 1]  # cause e1 < e2
         city21, city22 = route[e2], route[(e2 + 1) % self.n]
-
-        # instead of calculating the distances every time, we want to store them and access them from a matrix
-        # c_e1 = self.dist(city11, city12)
-        # c_e2 = self.dist(city21, city22)
-        # c_E1 = self.dist(city11, city21)
-        # c_E2 = self.dist(city12, city22)
 
         c_e1 = self.distance[city11, city12]
         c_e2 = self.distance[city21, city22]
@@ -177,12 +137,7 @@ class TSP:
 
         delta_c = new_c - old_c
 
-        # assert(abs(delta_c_slow - delta_c) < 1e-10) # check that the two lead to the same result.
-        # since floating point operations lead to slightly different results in computers make just sure that the distance is small
-
         return delta_c
 
     def copy(self):
-        # we could optimize it more, i.e. the coordinates of the cities will not change so
-        #   we just need to copy the reference to the route
         return deepcopy(self)

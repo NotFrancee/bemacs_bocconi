@@ -1,5 +1,6 @@
 import numpy as np
 import time
+from itertools import groupby
 
 
 def solve(s: str, nrows: int):
@@ -65,7 +66,9 @@ class Solver:
 
         nc = self.get_cols()
 
-        matr = np.zeros((nr, nc), dtype=int)
+        matr_cols = nc
+
+        matr = np.zeros((nr, matr_cols), dtype=int)
         matr[:, 0] = np.arange(nr)
 
         # jump up is jump down reversed
@@ -75,8 +78,9 @@ class Solver:
         # print("jump")
         # print(jump_up, jump_down)
         # move_down = True
+        print(f"starting: \n{matr} jump up\n{jump_up} jump down\n{jump_down}")
 
-        for j in range(1, nc):
+        for j in range(1, matr_cols):
             # if col odd apply a func, otherwise the other
             if j % 2 == 0:
                 jump = jump_down
@@ -84,16 +88,23 @@ class Solver:
                 jump = jump_up
 
             # print(f"about to make jump at col {j}\n", jump, matr[:, j - 1])
-            matr[:, j] = matr[:, j - 1] + jump
+            print("-" * 50)
+            print(f"matr before \n{matr}")
+            matr[1:-1, j] = matr[1:-1, j - 1] + jump[1:-1]
+            print(f"matr after \n{matr}")
 
-        print(f"matr before deleting {matr}")
+            # apply this only to rows in between not to edges
+            print(f"adding {jump_down[0]} to {matr[0,j-1]}")
+            matr[0, j] = matr[0, j - 1] + jump_up[0]
+            print(f"adding {jump_up[1]} to {matr[-1,j-1]}")
+            matr[-1, j] = matr[-1, j - 1] + jump_down[-1]
+
+        print(f"matr before deleting \n{matr}")
         # matr[[0, -1], 1::2] = -1
-        matr = matr[(matr >= 0) & (matr < len(s))].flatten()
-        print(f"matr before pulling unique {matr}")
-        unique_idx = np.unique(matr, return_index=True)
-        print(unique_idx)
-        # matr = matr[unique_idx]
-        print(f"matr after {matr}")
+
+        matr = matr[(matr < len(s))].flatten()
+        matr = [x[0] for x in groupby(matr)]
+        print(f"matr after \n{matr}")
 
         res = "".join(self.s[matr])
         print(res)
@@ -122,10 +133,10 @@ def trials(n, s, nr):
     return meas.mean(axis=1), meas.std(axis=1)
 
 
-s = "ABC"
+s = "PAYPALISHIRING"
 solver = Solver()
-solver.solve(s, 2)
+solver.solve(s, 3)
 
-a = np.array([1, 2, 14, 14, 14, 2, 3, 3, 4, 4, 5, 5, 8, 8, 8, 10])
+# a = np.array([1, 2, 14, 14, 14, 2, 3, 3, 4, 4, 5, 5, 8, 8, 8, 10])
 
-print(np.unique(a, return_index=False, return_counts=False, return_inverse=True))
+# print([x[0] for x in groupby(a)])

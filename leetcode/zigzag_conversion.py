@@ -127,4 +127,5 @@ solver = Solver()
 solver.solve(s, 2)
 
 a = np.array([1, 2, 14, 14, 14, 2, 3, 3, 4, 4, 5, 5, 8, 8, 8, 10])
+
 print(np.unique(a, return_index=False, return_counts=False, return_inverse=True))

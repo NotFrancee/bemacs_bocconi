@@ -74,7 +74,7 @@
 ## don't need the k-th step any more. Thus we can save memory.
 ##
 ## Path reconstruction
-## -------------------
+## ------------------- 
 ##
 ## This gives us the optimal costs, but we still don't have the
 ## optimal paths. For that, we need to keep track, at each step k,
@@ -97,70 +97,93 @@
 
 import numpy as np
 
-test_w0 = np.array(
-    [
-        [0.0, 9.0, 3.0, 1.0],
-        [-0.5, 0.0, -0.8, 0.1],
-        [0.1, 3.3, 0.0, 2.2],
-        [np.inf, np.inf, np.inf, 0.0],
-    ]
-)
+test_w0 = np.array([
+        [   0.0,    9.0,    3.0, 1.0],
+        [  -0.5,    0.0,   -0.8, 0.1],
+        [   0.1,    3.3,    0.0, 2.2],
+        [np.inf, np.inf, np.inf, 0.0]
+        ])
 
-test_w1 = np.array(
-    [
-        [0.0, 20.0, 10.0, 63.0, 72.0, np.inf],
-        [np.inf, 0.0, 0.0, 40.0, np.inf, 70.0],
-        [np.inf, 5.0, 0.0, 40.0, 34.0, 100.0],
-        [np.inf, np.inf, -20.0, 0.0, -5.0, 36.0],
-        [np.inf, -31.0, np.inf, 5.0, 0.0, 80.0],
-        [np.inf, np.inf, np.inf, np.inf, np.inf, 0.0],
-    ]
-)
-
-
-def check_diag(w):
-    print(w)
-
-    return (w == 0).trace() == w.shape[0]
-
+test_w1 = np.array([
+        [   0.0,   20.0,   10.0,   63.0,   72.0, np.inf],
+        [np.inf,    0.0,    0.0,   40.0, np.inf,   70.0],
+        [np.inf,    5.0,    0.0,   40.0,   34.0,  100.0],
+        [np.inf, np.inf,  -20.0,    0.0,   -5.0,   36.0],
+        [np.inf,  -31.0, np.inf,    5.0,    0.0,   80.0],
+        [np.inf, np.inf, np.inf, np.inf, np.inf,    0.0]
+        ])
 
 def floydwarshall(w):
-    # ARGUMENT CHECKS
-    # w is a 2d square matrix
-    if not (w.shape[0] == w.shape[1]):
-        raise Exception()
-
-    if not check_diag(w):
-        raise Exception("Diag must be 0")
-    # no cycles with negative cost
-    # we run the algo assuming htere are not negative cycles.
-    # If the diags are not 0 anymore it means there are
-    # if not check_diag(floydwarshall(w)):
-    #     raise Exception("Negative Cycles ")
-
-    r = w.copy()
+    ## argument checks:
+    ## 2-d array, square matrix
+    ## diagonal terms of w are zero
+    ## no cycles with negative cost
     n = w.shape[0]
-    pred = np.zeros((n, n), dtype=int)
-    for i in range(n):
-        for j in range(n):
-            pred[i, j] = i if r[i, j] != np.inf else -1
-
+    r = w.copy()
+    # pred = np.zeros((n,n), dtype=int)# matrix of integers with the same size as r
+    
+    pred = np.arange(n).reshape(n,1) + np.zeros(n, dtype=int)
+    msk = (w == np.inf)
+    pred[msk] = -1
+    
+    # for i in range(n):
+    #     for j in range(n):
+    #         if r[i,j] == np.inf:
+    #         # if no connection put -1
+    #             pred[i,j] = -1
+    #         else:
+    #             # if connection exists put i
+    #             pred[i,j] = i
+                
+    # FORWARD PASS
     for k in range(n):
-        for i in range(n):
-            for j in range(n):
-                r_ikj = r[i, k] + r[k, j]
-                if r_ikj < r[i, j]:
-                    r[i, j] = r_ikj
-                    pred[i, j] = pred[k, j]
-
+        r_new = r[:,k].reshape(n,1) + r[k, :]
+        pred_new = pred[k,:] + np.zeros((n,1), dtype=int)
+        msk = r_new < r
+        r[msk] = r_new[msk]
+        pred[msk] = pred_new[msk]
+        
+        # for i in range(n):
+        #     for j in range(n):
+        #         # r[i,j] = min(r[i,j], r[i,k] + r[k,j])
+        #         # r_k = r[i,k] + r[k,j]
+        #         if r_new[i,j] < r[i,j]:
+        #             r[i,j] = r_new[i,j]
+        #             pred[i,j] = pred[k,j]
     return r, pred
 
-
 def get_opt_path(pred, i, j):
-    path = []
-    path.insert(0, pred[i, j])
-    # you cycle back asking hte pred of i to j, hten the pred of that node and so on
+    if pred[i,j] == -1:
+        return []
+    path = [i,j]
+    z = pred[i,j]
+    while z != i:
+        path.insert(1, z)
+        z = pred[i, z]
+    return path
 
+def check_all_paths(w):
+    r, pred = floydwarshall(w)
+    n = w.shape[0]
+    # check all pairs
+    for i in range(n):
+        for j in range(n):
+            path = get_opt_path(pred, i, j)
+            # check when the path is empty that the cost r is infinite
+            if len(path) == 0:
+                assert r[i,j] == np.inf
+                continue
+            
+            
+            # if the path is non-empty, cumulate the cost of all the steps
+            # and compare with r. (check they are close enough)
+            r_rec = 0.
+            for k in range(len(path)-1):
+                r_rec += w[path[k], path[k+1]]
+            assert abs(r[i,j] - r_rec) < 1e-12
+            
+            
+    print("both conditions ok")
+    return
+    
 
-r = floydwarshall(test_w0)
-print(r)

@@ -1,5 +1,4 @@
 import numpy as np
-import numpy.random as rnd
 
 
 # To import an actual image
@@ -7,8 +6,8 @@ import numpy.random as rnd
 # import matplotlib.pyplot as plt
 
 # my_image = Image.open('your image location')
-## EXAMPLE:
-## my_image = Image.open('/home/luca/Pictures/UP_Bocconi20200319103546.jpg')
+# EXAMPLE:
+# my_image = Image.open('/home/luca/Pictures/UP_Bocconi20200319103546.jpg')
 # a_image = np.array(bocconi_image) # turn it into an array
 # a_image_bw = a_image.mean(axis=2) # turn it to grey-scale
 

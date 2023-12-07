@@ -66,14 +66,14 @@ def gradx(img):
             f = 2 if 0 < j < m - 1 else 1.0
             g[i, j] = (gl + gr) / f
 
-    # TASK 1
-    # Can we avoid for loops? Vectorize it! (still a few lines required)
-    # g[:, 0] = np.abs(img[:, 0], img[:, 1])
-    # g[:, 1:-1] = (
-    #     np.abs(img[:, 1:-1] - img[:, 0:-2]) + np.abs(img[:, 1:-1] - img[:, 2:])
-    # ) / 2
+        # TASK 1
+        # Can we avoid for loops? Vectorize it! (still a few lines required)
+        # g[:, 0] = np.abs(img[:, 0], img[:, 1])
+        # g[:, 1:-1] = (
+        #     np.abs(img[:, 1:-1] - img[:, 0:-2]) + np.abs(img[:, 1:-1] - img[:, 2:])
+        # ) / 2
 
-    # g[:, -1] = np.abs(img[:, -1], img[:, -2])
+        # g[:, -1] = np.abs(img[:, -1], img[:, -2])
 
     return g
 
@@ -103,7 +103,8 @@ def carve(img, seam):
     for i in range(n):
         sj = seam[i]
         # TASK 2
-        # copy the image rwo by row, but in each row exclude the pixel specified in the seam
+        # copy the image rwo by row, but in each row exclude the pixel
+        # specified in the seam
         carved_img[i, :sj] = img[i, :sj]
         carved_img[i, sj:] = img[i, sj + 1 :]
 

@@ -1,6 +1,5 @@
-from operator import call
 import numpy as np
-from function_examples import g, grad_g, k, grad_k
+from function_examples import g, grad_g, k, grad_k  # noqa
 
 # ~~~~~~~~~~~~~~~~~~~~~ ##
 
@@ -11,11 +10,13 @@ import matplotlib.pyplot as plt
 
 plt.close("all")  # close the previous figures
 fig = plt.figure()  # create a new one
-x0 = np.linspace(-3.0, 3.0, 1000)  # we'll be plotting in the interval [-3,3]x[-3,3]
+
+# we'll be plotting in the interval [-3,3]x[-3,3]
+x0 = np.linspace(-3.0, 3.0, 1000)
 x1 = x0
-x0, x1 = np.meshgrid(
-    x0, x1
-)  # this produces two grids, one with the x0 coordinates and one with the x1 coordinates
+x0, x1 = np.meshgrid(x0, x1)  # this produces two grids,
+# one with the x0 coordinates and one with the x1 coordinates
+
 z = k(
     np.stack((x0, x1))
 )  # this computes a function (in this case g) over the stacked grids
@@ -37,15 +38,11 @@ plt.contour(x0, x1, z, 50, cmap="RdGy")
 # ~~~~~~~~~~~~~~~~~~~~~ ##
 
 # Optimization, gradient descent version (TODO)
-from scipy import optimize
-
-
-def callback(xk):
-    print(xk)
-    return False
+from GradDescND import grad_desc, grad  # noqa
 
 
 x0 = np.array([0.1, 0.23])
-res = optimize.minimize(g, x0, callback=callback)
-
-print(res)
+x_min, x_traj, converged = grad_desc(g, x0, alpha=0.01, max_epochs=1000)
+print(x_min, x_traj, converged)
+plt.plot(x_traj[:, 0], x_traj[:, 1], c="red")
+plt.show()

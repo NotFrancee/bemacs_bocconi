@@ -1,24 +1,34 @@
 """
-Implement Conway’s game of life. Write a function that takes an initial configuration as a table of zeros and ones
-(could be bools or ints) and a number of steps  n . The function runs the game of life for  n  steps and returns the
+Implement Conway’s game of life. Write a function that takes
+an initial configuration as a table of zeros and ones
+(could be bools or ints) and a number of steps  n .
+The function runs the game of life for  n  steps and returns the
 final configuration.
-Note: in the original game of life rules, it is supposed that the grid is infinite; instead, for simplicity, you should use
-a finite grid instead, and just apply the standard rules even at the borders — which means that the border cells
+Note: in the original game of life rules, it is supposed that
+the grid is infinite; instead, for simplicity, you should use
+a finite grid instead, and just apply the standard rules even
+at the borders — which means that the border cells
 have only 5 neighbors, and the corner cells only 3.
 
-Tip: for a more straightforward implementation, you’ll need 2 arrays, one for the current configuration and one for
-the next one; after each step overwrite the current with the next. For an advanced implementation, you may try a
-version that computes the table of neighbors of each cell first, and then uses comparison operators and logic
+Tip: for a more straightforward implementation, you’ll need 2 arrays, one
+for the current configuration and one for
+the next one; after each step overwrite the current with the next.
+For an advanced implementation, you may try a
+version that computes the table of neighbors of each cell first,
+and then uses comparison operators and logic
 boolean filters (the operations  & ,  |  and  ~ ) to update the configuration.
-Plot the configuration at each step as an image (using  imshow ). Remember to use  plt.clf()  before each new
-plot or your plots will rapidly become slow (can you guess why?). This works best if you don’t use inline plotting
-(see note in exercise 18) and if you put  plt.pause(0.05)  after each plot in order to actually see what’s going on.
-Tip: start with small grids and simple configurations when debugging, and check one step at a time. Here is for
+Plot the configuration at each step as an image (using  imshow ).
+Remember to use  plt.clf()  before each new
+plot or your plots will rapidly become slow (can you guess why?).
+This works best if you don’t use inline plotting
+(see note in exercise 18) and if you put  plt.pause(0.05)
+after each plot in order to actually see what’s going on.
+Tip: start with small grids and simple configurations when debugging,
+and check one step at a time. Here is for
 example an interesting self-sustaining pattern, called a glider:
 """
 
 import numpy as np
-from nptyping import NDArray
 from copy import deepcopy
 import matplotlib.pyplot as plt
 
@@ -28,7 +38,7 @@ class Config:
         self.matr = matr
 
     def get_neighbor(self, i, j):
-        return self.matr[i - 1 : i + 2, j - 1 : j + 2]
+        return self.matr[i - 1 : i + 2, j - 1 : j + 2]  # noqa
 
     def live(self, i, j):
         self.matr[i, j] = 1
@@ -45,7 +55,7 @@ class Config:
         plt.pause(0.05)
 
 
-def ex26_gameoflife(config: NDArray, n: int):
+def ex26_gameoflife(config: np.ndarray, n: int):
     current_config = Config(config)
     next_config = None
 

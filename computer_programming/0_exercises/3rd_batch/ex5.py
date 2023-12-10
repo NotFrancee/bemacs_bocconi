@@ -20,17 +20,35 @@ def best_path(w: np.ndarray):
     c[0, :] = w.cumsum(axis=1)[0, :]
     c[:, 0] = w.cumsum(axis=0)[:, 0]
 
-    whence = np.zeros((n, m))
-    path = np.zeros(n + m - 2)
+    whence = np.zeros((n, m), dtype=int)
+    whence[0, 1:] = -1
+    whence[1:, 0] = 1
 
     # forward pass
     for i in range(1, n):
         for j in range(1, m):
             prev_costs = [c[i - 1, j], c[i, j - 1]]
             c[i, j] = w[i, j] + np.min(prev_costs)
+            whence[i, j] = 1 if prev_costs[0] <= prev_costs[1] else -1
 
     print(c)
+    print(whence)
+
     # backward pass
+    path = np.zeros(n + m - 2)
+
+    i, j = n - 1, m - 1
+
+    for k in range(n + m - 3, -1, -1):
+        move = whence[i, j]
+        path[k] = move
+
+        if move == -1:
+            j -= 1
+        else:
+            i -= 1
+
+    print(path)
 
     # checks
     assert len(path == 1) == n - 1

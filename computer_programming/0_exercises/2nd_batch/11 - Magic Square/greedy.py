@@ -1,7 +1,8 @@
 import numpy as np
+from magicsquare import MagicSquare
 
 
-def greedy(probl, repeats=1, num_iters=100, seed=None):
+def greedy(probl: MagicSquare, repeats=1, num_iters=100, seed=None):
     """Greedy algorithm
     * probl: the problem to solve
     * repeates: how many times you repeat the algorithm
@@ -11,12 +12,14 @@ def greedy(probl, repeats=1, num_iters=100, seed=None):
 
     best_config = None
     best_cost = np.infty
+    best_probl = probl
 
     for _ in range(repeats):
         if seed is not None:
             np.random.seed(seed)
 
-        # store the configuration inside the object and not in the greedy function
+        # store the configuration
+        # inside the object and not in the greedy function
         probl.init_config()
         cx = probl.cost()
 
@@ -37,15 +40,6 @@ def greedy(probl, repeats=1, num_iters=100, seed=None):
 
         if cx < best_cost:
             best_cost = cx
-            # copying the object straight away is not correct though!
-            # this assigns the reference to the object, and when later on the
-            #   probl gets initialized again, the best_probl will point to the new
-            #   problem
-            # but by just doing copy,there are arrays in the object that are references themselves,
-            #   so those references will still point to the arrays from the iniitla obj (which will chang )
-
-            # hence there are different types of copy, shallow (depth = 1, leads to the problem described above)
-            #   we are going to use deep copy which solves the problem we've described
             best_probl = probl.copy()  # use the method defined in the object
 
     best_probl.display()

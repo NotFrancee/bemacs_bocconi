@@ -1,14 +1,14 @@
 """Runs the greedy algorithm on TSP
 """
 
-from magic_square import MagicSquare
+from magicsquare import MagicSquare
 from greedy import greedy
 
 
 def run():
     N = 4
-    SUM = 25
-    N_REPEATS = 5
+    SUM = 34
+    N_REPEATS = 20
     N_ITERS = 10_000
 
     probl = MagicSquare(N, SUM)

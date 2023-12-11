@@ -31,7 +31,7 @@ class G:
         print(np.arange(1, 10))
         deltas = np.power(0.1, np.arange(1, 10))
 
-        err = lambda dd: abs(real - grad(n, self.lin, x, dd))
+        err = lambda dd: abs(real - grad(n, self.lin, x, dd))  # noqa
 
         errors = err(deltas)
         print(errors)
@@ -47,7 +47,13 @@ def gradn(n, f, x, delta):
 
     else:
         return (
-            gradn(n - 1, f, x + delta, delta) - gradn(n - 1, f, x - delta, delta)
+            gradn(n - 1, f, x + delta, delta)
+            - gradn(
+                n - 1,
+                f,
+                x - delta,
+                delta,
+            )
         ) / (2 * delta)
 
 

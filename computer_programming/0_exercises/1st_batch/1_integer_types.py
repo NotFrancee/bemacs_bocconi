@@ -1,7 +1,7 @@
 """
 Create a variable storing the number 100 as a 16-bit integer. Then another variable which stores 100 as a 16-bit
 unsigned integer (generally abbreviated “uint”). From the lecture notes, compute which are the minimum and
-maximum values that these two types can store. 
+maximum values that these two types can store.
 
 Verify your computations by “testing the boundaries”: perform
 operations that reach the boundaries, then go beyond and observe that the numbers start cycling around.
@@ -15,7 +15,7 @@ output type to use if you mix different input types
 import numpy as np
 
 a = np.int8(100)  # signed int 16bits => 2^15 - 1
-b: np.uint16 = 100  # unsigned 16 bits => 2^16 - 1
+b = np.uint16(10)  # unsigned 16 bits => 2^16 - 1
 
 print(2**15 - 1)
 print()
